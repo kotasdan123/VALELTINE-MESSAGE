@@ -88,7 +88,7 @@
             border-radius: 50px;
             font-weight: bold;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            transition: transform 0.1s ease;
+            transition: transform 0.1s ease, left 0.2s ease, top 0.2s ease;
         }
 
         #noBtn { 
@@ -133,8 +133,14 @@
             z-index: -1;
             animation: fall linear forwards;
         }
+
         @keyframes fall {
             to { transform: translateY(110vh) rotate(360deg); }
+        }
+
+        /* Spinning cats for the 50+ click mark */
+        @keyframes crazySpin {
+            to { transform: translateY(110vh) rotate(1440deg); }
         }
         
         .celebration, .secret-gift-panel { display: none; font-size: 1.3rem; color: #ff4d6d; font-weight: bold; }
@@ -150,6 +156,7 @@
 
     <canvas id="trailCanvas"></canvas>
     <div id="musicControl">🎵 Play Cute Music</div>
+    
     <audio id="bgMusic" loop>
         <source src="https://assets.mixkit.co/music/preview/mixkit-uplifting-chiptune-game-music-440.mp3" type="audio/mpeg">
     </audio>
@@ -197,6 +204,8 @@
         const canvas = document.getElementById('trailCanvas');
         const ctx = canvas.getContext('2d');
 
+        const meowSound = new Audio("https://assets.mixkit.co/sfx/preview/mixkit-sweet-kitty-meow-93.mp3");
+
         let score = 0;
         let yesSize = 1;
         let particles = [];
@@ -204,16 +213,36 @@
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
 
+        function playMeow() {
+            meowSound.currentTime = 0;
+            meowSound.play();
+        }
+
         function createFallingItem(isCat) {
             const item = document.createElement('div');
             item.classList.add('falling-item');
             item.innerHTML = isCat ? ['🐱', '😸', '🐾', '🐈'][Math.floor(Math.random() * 4)] : ['❤️', '💖', '💝'][Math.floor(Math.random() * 3)];
             item.style.left = Math.random() * 100 + 'vw';
-            item.style.fontSize = (Math.random() * 20 + 20) + 'px';
-            item.style.animationDuration = (Math.random() * 3 + 2) + 's';
+            
+            // Growing logic: cats get bigger as score increases
+            let baseSize = Math.random() * 20 + 20;
+            if (isCat && score > 30) {
+                baseSize += (score - 30) * 2; 
+            }
+            item.style.fontSize = baseSize + 'px';
+            
+            // Spinning logic: cats spin faster as score hits 50
+            if (isCat && score >= 50) {
+                item.style.animationName = 'crazySpin';
+                item.style.animationDuration = '1.5s';
+            } else {
+                item.style.animationDuration = (Math.random() * 3 + 2) + 's';
+            }
+
             document.body.appendChild(item);
             setTimeout(() => item.remove(), 5000);
         }
+
         setInterval(() => {
             createFallingItem(false);
             if (score >= 30) createFallingItem(true);
@@ -248,16 +277,20 @@
         }
         animate();
 
-        function moveNo(e) {
-            // Difficulty logic
-            if (score < 20) return; // EASY START: Doesn't move!
+        // The Avoidance Logic
+        function moveNo() {
+            // Difficulty Curve:
+            // 0-20: No movement (Easy)
+            // 20-50: Medium jumps
+            // 50+: High-speed teleporting
+            
+            if (score < 20) return; 
 
-            let chance = 0.3; // Default
-            if (score >= 50) chance = 0.05; // HARD MODE
+            // Calculate jump speed based on score
+            let transitionSpeed = score >= 50 ? "0.05s" : "0.2s";
+            noBtn.style.transition = `all ${transitionSpeed} ease-out`;
 
-            if (Math.random() < chance) return; 
-
-            const x = Math.max(15, Math.random() * (window.innerWidth - 100));
+            const x = Math.max(20, Math.random() * (window.innerWidth - 120));
             const y = Math.max(100, Math.random() * (window.innerHeight - 150));
             
             noBtn.style.position = 'fixed';
@@ -265,28 +298,47 @@
             noBtn.style.top = y + 'px';
         }
 
+        // Trigger move on approach for mobile (touchstart)
         noBtn.addEventListener('touchstart', (e) => {
-            if (score >= 20 && Math.random() > 0.2) {
-                e.preventDefault();
-                moveNo();
+            if (score >= 20) {
+                // 80% chance to jump away before the tap registers
+                if (Math.random() < 0.8) {
+                    e.preventDefault(); 
+                    moveNo();
+                }
             }
+        });
+
+        // Trigger move on hover for desktop
+        noBtn.addEventListener('mouseover', () => {
+            if (score >= 20) moveNo();
         });
 
         noBtn.onclick = (e) => {
             score++;
             scoreDisplay.innerText = score;
-            yesSize += 0.4; 
+            yesSize += 0.45; 
             yesBtn.style.transform = `scale(${yesSize})`;
+
+            if (score >= 30) playMeow();
 
             if (score % 10 === 0) {
                 const rect = noBtn.getBoundingClientRect();
                 createSuperFirework(rect.left + rect.width/2, rect.top + rect.height/2);
             }
 
-            if (score === 30) beggingText.innerText = "CAT ATTACK! 🐱🐾";
-            else if (score >= 50) beggingText.innerText = "ULTIMATE SPEED! ⚡";
-            else beggingText.innerText = "Okay, you're persistent! 😤";
+            if (score === 30) {
+                beggingText.innerText = "CAT ATTACK! 🐱🐾";
+                playMeow();
+            }
+            else if (score >= 50) {
+                beggingText.innerText = "ULTIMATE SPEED! ⚡";
+            }
+            else if (score >= 20) {
+                beggingText.innerText = "Catch me if you can! 😜";
+            }
             
+            // Move immediately after being successfully clicked
             moveNo();
         };
 
