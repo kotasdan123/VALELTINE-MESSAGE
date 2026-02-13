@@ -39,7 +39,6 @@
             text-shadow: 0 0 5px rgba(255, 77, 109, 0.3);
         }
 
-        /* Falling Hearts */
         .heart {
             position: fixed;
             top: -10px;
@@ -53,7 +52,6 @@
             to { transform: translateY(105vh) rotate(360deg); }
         }
 
-        /* Screen Shake Effect */
         .shake {
             animation: shake 0.5s;
         }
@@ -102,6 +100,14 @@
             transition: 0.3s;
         }
 
+        #noBtn { 
+            background-color: #888; 
+            color: white; 
+            z-index: 100; /* Higher than Yes */
+            position: relative;
+            transition: all 0.2s ease; /* Speed will be modified by JS */
+        }
+
         #yesBtn, #moreBtn { 
             background-color: #ff4d6d; 
             color: white; 
@@ -114,18 +120,17 @@
             background-color: #d00000;
         }
         
-        #noBtn { 
-            background-color: #888; 
-            color: white; 
-            z-index: 4;
-            position: relative;
-        }
-        
         .celebration, .secret-gift-panel { 
             display: none; 
             font-size: 1.5rem; 
             color: #ff4d6d; 
             font-weight: bold; 
+        }
+
+        .scoreboard {
+            font-size: 0.9rem;
+            color: #888;
+            margin-top: 10px;
         }
 
         .secret-gift-panel h2 {
@@ -153,8 +158,8 @@
             <h1>My QUEEN, can you be my Valentine's? 👑</h1>
             <span id="beggingText">I promise to treat you like royalty! ✨</span>
             <div class="buttons">
-                <button id="yesBtn">Yes! 😍</button>
                 <button id="noBtn">No 🥺</button>
+                <button id="yesBtn">Yes! 😍</button>
             </div>
         </div>
 
@@ -167,6 +172,7 @@
         <div id="secretGift" class="secret-gift-panel">
             <h2>Secret Gift 🎁</h2>
             <p>This is a secret gift for your eyes only.</p>
+            <div id="finalScore" style="font-size: 1rem; color: #555; margin-bottom: 10px;"></div>
             <span class="emoji-box">💖😘✨🌹💎</span>
         </div>
     </div>
@@ -180,6 +186,7 @@
         const message = document.getElementById('message');
         const secretGift = document.getElementById('secretGift');
         const beggingText = document.getElementById('beggingText');
+        const finalScoreDisplay = document.getElementById('finalScore');
 
         const phrases = [
             "Are you sure? 🥺",
@@ -189,13 +196,14 @@
             "I'll be the best Valentine ever!",
             "Look at the Yes button, it's so big! 👉",
             "My Queen deserves better than a No! 👑",
-            "Okay, that was a misclick, right?",
             "I'm begging you! 🙏",
             "Don't break my heart! 🥀"
         ];
 
         let yesSize = 1.2;
         let phraseIndex = 0;
+        let noCount = 0;
+        let speed = 0.3; // Initial move speed
 
         function createHeart() {
             const heart = document.createElement('div');
@@ -215,27 +223,36 @@
             }
         }
 
-        function moveNoButton(e) {
+        function moveNoButton() {
+            noCount++;
             card.classList.add('shake');
             setTimeout(() => card.classList.remove('shake'), 500);
 
+            // Make the button position fixed and move it
             noBtn.style.position = 'fixed';
             
-            const padding = 50;
+            const padding = 60;
             let newX = Math.random() * (window.innerWidth - noBtn.offsetWidth - padding);
             let newY = Math.random() * (window.innerHeight - noBtn.offsetHeight - padding);
             
+            // Keep button away from the edges
+            newX = Math.max(padding, newX);
+            newY = Math.max(padding, newY);
+
             noBtn.style.left = `${newX}px`;
             noBtn.style.top = `${newY}px`;
 
+            // Make it move faster each time (reduce transition time)
+            speed = Math.max(0.05, speed - 0.03); 
+            noBtn.style.transition = `${speed}s ease`;
+
+            // Update Text
             beggingText.innerText = phrases[phraseIndex];
             phraseIndex = (phraseIndex + 1) % phrases.length;
 
-            yesSize += 0.4;
+            // Increase Yes Button Size
+            yesSize += 0.3;
             yesBtn.style.transform = `scale(${yesSize})`;
-            
-            const redness = Math.min(255, 225 + (phraseIndex * 2));
-            document.body.style.backgroundColor = `rgb(${redness}, 228, 225)`;
         }
 
         noBtn.addEventListener('mouseover', moveNoButton);
@@ -244,7 +261,6 @@
             moveNoButton();
         });
 
-        // Click Yes: Go to Panel 2
         yesBtn.addEventListener('click', () => {
             explodeHearts();
             content.style.display = 'none';
@@ -254,12 +270,13 @@
             noBtn.style.display = 'none';
         });
 
-        // Click More: Go to Panel 3
         moreBtn.addEventListener('click', () => {
             explodeHearts();
             message.style.display = 'none';
             secretGift.style.display = 'block';
-            document.body.style.backgroundColor = '#d00000'; // Darker red for the secret gift
+            document.body.style.backgroundColor = '#d00000';
+            // Show the final scoreboard
+            finalScoreDisplay.innerHTML = `You tried to say No <b>${noCount}</b> times... <br>but love won! ❤️`;
         });
 
     </script>
