@@ -5,108 +5,66 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>My QUEEN, can you be my Valentine's?</title>
     <style>
-        * {
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background-color: #ffe4e1;
-            font-family: 'Poppins', sans-serif;
-            overflow: hidden;
-            margin: 0;
-            padding: 10px;
-            touch-action: none;
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; background-color: #ffe4e1;
+            font-family: 'Poppins', sans-serif; overflow: hidden; margin: 0;
+            touch-action: none; transition: background 0.5s;
         }
 
-        #trailCanvas {
-            position: fixed;
-            top: 0; left: 0;
-            pointer-events: none;
-            z-index: 999;
+        /* Music Unlock Overlay */
+        #overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #ff4d6d; z-index: 9999; display: flex;
+            flex-direction: column; justify-content: center; align-items: center;
+            color: white; text-align: center;
         }
 
         .container {
-            text-align: center;
-            background: rgba(255, 255, 255, 0.95);
-            padding: 25px 20px;
-            border-radius: 25px;
+            text-align: center; background: rgba(255, 255, 255, 0.95);
+            padding: 30px; border-radius: 25px;
             box-shadow: 0 10px 30px rgba(255, 77, 109, 0.3);
-            z-index: 10;
-            width: 100%;
-            max-width: 350px;
+            z-index: 10; width: 90%; max-width: 350px;
         }
 
         .buttons { 
-            margin-top: 20px; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            gap: 15px;
-            min-height: 200px;
+            margin-top: 20px; display: flex; flex-direction: column; 
+            align-items: center; gap: 15px; min-height: 180px;
         }
 
         button {
-            padding: 15px 40px;
-            font-size: 1.1rem;
-            cursor: pointer;
-            border: none;
-            border-radius: 50px;
-            font-weight: bold;
+            padding: 15px 40px; font-size: 1.1rem; cursor: pointer;
+            border: none; border-radius: 50px; font-weight: bold;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
 
         #noBtn { 
-            background-color: #888; 
-            color: white; 
-            position: relative; /* Starts relative, becomes fixed via JS */
-            z-index: 1000;
-            transition: all 0.15s ease-out;
+            background-color: #888; color: white; position: relative;
+            z-index: 1000; transition: all 0.1s ease;
         }
 
-        #yesBtn { 
-            background-color: #ff4d6d; 
-            color: white; 
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        #musicControl {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            z-index: 2000;
-            background: white;
-            border: 2px solid #ff4d6d;
-            border-radius: 20px;
-            padding: 5px 15px;
-            font-size: 0.8rem;
-        }
+        #yesBtn { background-color: #ff4d6d; color: white; }
 
         .falling-item {
-            position: fixed;
-            top: -50px;
-            pointer-events: none;
-            z-index: 1;
-            animation: fall linear forwards;
+            position: fixed; top: -50px; pointer-events: none;
+            z-index: 1; animation: fall linear forwards;
         }
 
         @keyframes fall { to { transform: translateY(110vh) rotate(360deg); } }
-        @keyframes crazySpin { to { transform: translateY(110vh) rotate(1440deg); } }
         
-        .celebration, .secret-gift-panel { display: none; }
-        .emoji-box { font-size: 3rem; display: block; margin-top: 10px; }
+        #message { display: none; }
+        .score-final { font-size: 1.5rem; color: #d00000; margin-top: 20px; }
     </style>
 </head>
-<body onclick="startMusic()">
+<body>
 
-    <canvas id="trailCanvas"></canvas>
-    <div id="musicControl">🎵 Music: Off</div>
-    
-    <audio id="bgMusic" loop preload="auto">
+    <div id="overlay">
+        <h1>For My Queen 👑</h1>
+        <button onclick="unlockMusic()" style="background: white; color: #ff4d6d; font-size: 1.5rem;">Click to Start ❤️</button>
+    </div>
+
+    <audio id="bgMusic" loop>
         <source src="https://assets.mixkit.co/music/preview/mixkit-uplifting-chiptune-game-music-440.mp3" type="audio/mpeg">
     </audio>
 
@@ -118,13 +76,14 @@
                 <button id="noBtn">No 🥺</button>
                 <button id="yesBtn">Yes! 😍</button>
             </div>
-            <p style="font-weight: bold; color: #d00000;">Score: <span id="scoreVal">0</span></p>
+            <p style="font-weight: bold; color: #d00000;">Attempts to say No: <span id="scoreVal">0</span></p>
         </div>
 
-        <div id="message" class="celebration">
-            <h1 style="color: #ff4d6d;">YES! ❤️</h1>
-            <p>See you on Feb 14th, My Queen!</p>
-            <span class="emoji-box">💍🌹✨</span>
+        <div id="message">
+            <h1 style="color: #ff4d6d;">I KNEW IT! ❤️</h1>
+            <p>You're stuck with me on Feb 14th!</p>
+            <div class="score-final">Final Heartbreak Score: <span id="finalScoreDisplay">0</span></div>
+            <span style="font-size: 4rem;">🐱🌹💍</span>
         </div>
     </div>
 
@@ -132,95 +91,82 @@
         const noBtn = document.getElementById('noBtn');
         const yesBtn = document.getElementById('yesBtn');
         const bgMusic = document.getElementById('bgMusic');
-        const musicStatus = document.getElementById('musicControl');
         const scoreVal = document.getElementById('scoreVal');
         const beggingText = document.getElementById('beggingText');
         
         let score = 0;
-        let musicStarted = false;
 
-        // --- MUSIC ENGINE ---
-        function startMusic() {
-            if (!musicStarted) {
-                bgMusic.play().then(() => {
-                    musicStarted = true;
-                    musicStatus.innerText = "🎵 Music: On";
-                }).catch(e => console.log("Audio waiting for interaction"));
-            }
+        function unlockMusic() {
+            bgMusic.play();
+            document.getElementById('overlay').style.display = 'none';
         }
 
-        // --- BUTTON EVASION ENGINE ---
         function moveNo() {
-            if (score < 5) return; // Super easy at the very start
+            if (score < 5) return; 
 
-            // Switch to fixed positioning so it can escape the container
             noBtn.style.position = 'fixed';
+            const maxX = window.innerWidth - noBtn.offsetWidth - 20;
+            const maxY = window.innerHeight - noBtn.offsetHeight - 20;
             
-            const padding = 50;
-            const maxX = window.innerWidth - noBtn.offsetWidth - padding;
-            const maxY = window.innerHeight - noBtn.offsetHeight - padding;
-            
-            const randomX = Math.random() * maxX + padding/2;
-            const randomY = Math.random() * maxY + padding/2;
-
-            noBtn.style.left = randomX + 'px';
-            noBtn.style.top = randomY + 'px';
+            noBtn.style.left = Math.random() * maxX + 'px';
+            noBtn.style.top = Math.random() * maxY + 'px';
         }
 
-        // Move when touched (Mobile)
+        // Catch accidental taps/clicks
         noBtn.addEventListener('touchstart', (e) => {
-            if (score >= 10) {
+            if (score >= 15) {
                 e.preventDefault();
                 moveNo();
-                updateScore();
+                incrementScore();
             }
         });
 
-        // Move when hovered (Desktop)
-        noBtn.addEventListener('mouseover', () => {
-            if (score >= 10) moveNo();
-        });
-
+        noBtn.onmouseover = () => { if (score >= 10) moveNo(); };
+        
         noBtn.onclick = () => {
-            updateScore();
+            incrementScore();
             moveNo();
         };
 
-        function updateScore() {
+        function incrementScore() {
             score++;
             scoreVal.innerText = score;
             
-            // Make Yes bigger
-            let scale = 1 + (score * 0.15);
+            // Scaling Yes Button
+            let scale = 1 + (score * 0.12);
             yesBtn.style.transform = `scale(${scale})`;
 
-            if (score >= 30) beggingText.innerText = "CAT ATTACK! 🐱";
-            else if (score >= 20) beggingText.innerText = "Catch me! 🏃‍♂️";
-            else beggingText.innerText = "Wait, don't click that! 😱";
-            
-            if (score >= 30) spawnCat();
+            if (score >= 30) {
+                beggingText.innerText = "CAT ATTACK! 🐱";
+                spawnItem('🐱');
+            } else if (score >= 15) {
+                beggingText.innerText = "Too slow! 💨";
+                spawnItem('❤️');
+            }
         }
 
-        function spawnCat() {
-            const cat = document.createElement('div');
-            cat.className = 'falling-item';
-            cat.innerHTML = '🐱';
-            cat.style.left = Math.random() * 100 + 'vw';
-            cat.style.fontSize = (Math.random() * 20 + 20) + 'px';
-            cat.style.animationDuration = (Math.random() * 2 + 2) + 's';
-            if (score > 50) cat.style.animationName = 'crazySpin';
-            document.body.appendChild(cat);
-            setTimeout(() => cat.remove(), 4000);
+        function spawnItem(emoji) {
+            const item = document.createElement('div');
+            item.className = 'falling-item';
+            item.innerHTML = emoji;
+            item.style.left = Math.random() * 100 + 'vw';
+            item.style.fontSize = '30px';
+            item.style.animationDuration = '3s';
+            document.body.appendChild(item);
+            setTimeout(() => item.remove(), 3000);
         }
 
         yesBtn.onclick = () => {
             document.getElementById('content').style.display = 'none';
             document.getElementById('message').style.display = 'block';
+            document.getElementById('finalScoreDisplay').innerText = score;
             document.body.style.backgroundColor = '#ffb6c1';
+            
+            // Victory Rain
+            for(let i=0; i<30; i++) {
+                setTimeout(() => spawnItem('💖'), i * 100);
+            }
         };
-
-        // Initialize score
-        scoreVal.innerText = score;
     </script>
 </body>
 </html>
