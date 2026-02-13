@@ -17,13 +17,13 @@
             transition: background 0.5s;
         }
 
-        /* Sparkle Canvas */
-        #canvas {
+        /* Sparkling Trail Canvas */
+        #trailCanvas {
             position: fixed;
             top: 0;
             left: 0;
             pointer-events: none;
-            z-index: 999;
+            z-index: 9999;
         }
 
         .dedication {
@@ -61,147 +61,7 @@
             to { transform: translateY(105vh) rotate(360deg); }
         }
 
-        .container {
-            text-align: center;
-            background: rgba(255, 255, 255, 0.95);
-            padding: 30px;
-            border-radius: 30px;
-            box-shadow: 0 15px 35px rgba(255, 77, 109, 0.3);
-            z-index: 10;
-            width: 85%;
-            max-width: 400px;
-            transition: all 0.3s ease;
+        .shake {
+            animation: shake 0.5s;
         }
-
-        h1 { color: #d00000; font-size: 1.8rem; margin-bottom: 10px; }
-        #beggingText { height: 40px; color: #ff4d6d; font-style: italic; font-weight: bold; margin-bottom: 15px; display: block;}
-        
-        .buttons { 
-            margin-top: 20px; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            gap: 20px;
-            min-height: 180px;
-        }
-
-        button {
-            padding: 15px 30px;
-            font-size: 1.2rem;
-            cursor: pointer;
-            border: none;
-            border-radius: 50px;
-            font-weight: bold;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            touch-action: none; 
-            transition: 0.3s;
-        }
-
-        #noBtn { 
-            background-color: #888; 
-            color: white; 
-            z-index: 100;
-            position: relative;
-            transition: all 0.2s ease;
-        }
-
-        #yesBtn, #moreBtn { 
-            background-color: #ff4d6d; 
-            color: white; 
-            z-index: 5; 
-        }
-
-        /* Music Controls */
-        #musicToggle {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            font-size: 0.8rem;
-            padding: 10px;
-            background: white;
-            border-radius: 20px;
-            z-index: 1000;
-        }
-        
-        .celebration, .secret-gift-panel { 
-            display: none; 
-            font-size: 1.5rem; 
-            color: #ff4d6d; 
-            font-weight: bold; 
-        }
-
-        .emoji-box { font-size: 3.5rem; display: block; margin-top: 15px; animation: bounce 1s infinite; }
-
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-    </style>
-</head>
-<body>
-
-    <canvas id="canvas"></canvas>
-
-    <div class="dedication">
-        For YOU 🌸
-        <span class="secret-lover">From your secret lover.. GAB 💌</span>
-    </div>
-
-    <audio id="bgMusic" loop>
-        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
-    </audio>
-    <button id="musicToggle">Play Music 🎵</button>
-
-    <div class="container" id="card">
-        <div id="content">
-            <h1>My QUEEN, can you be my Valentine's? 👑</h1>
-            <span id="beggingText">I promise to treat you like royalty! ✨</span>
-            <div class="buttons">
-                <button id="noBtn">No 🥺</button>
-                <button id="yesBtn">Yes! 😍</button>
-            </div>
-        </div>
-
-        <div id="message" class="celebration">
-            I knew you'd say Yes! <br>See you on February 16! 🥰
-            <span class="emoji-box">❤️💍👑</span>
-            <button id="moreBtn">You want more? click here</button>
-        </div>
-
-        <div id="secretGift" class="secret-gift-panel">
-            <h2>Secret Gift 🎁</h2>
-            <p>This is for your eyes only.</p>
-            <div id="finalScore" style="font-size: 1rem; color: #555; margin-bottom: 10px;"></div>
-            <span class="emoji-box">💖😘✨🌹💎</span>
-        </div>
-    </div>
-
-    <script>
-        const noBtn = document.getElementById('noBtn');
-        const yesBtn = document.getElementById('yesBtn');
-        const moreBtn = document.getElementById('moreBtn');
-        const content = document.getElementById('content');
-        const message = document.getElementById('message');
-        const secretGift = document.getElementById('secretGift');
-        const beggingText = document.getElementById('beggingText');
-        const finalScoreDisplay = document.getElementById('finalScore');
-        const music = document.getElementById('bgMusic');
-        const musicBtn = document.getElementById('musicToggle');
-
-        let noCount = 0;
-        let speed = 0.3;
-        let yesSize = 1.2;
-
-        // --- Sparkle Trail Logic ---
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        let particles = [];
-
-        function resize() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-        window.addEventListener('resize', resize);
-        resize();
-
-        class Particle
+        @keyframes shake {
