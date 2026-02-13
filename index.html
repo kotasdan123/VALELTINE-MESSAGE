@@ -150,7 +150,6 @@
 
     <canvas id="trailCanvas"></canvas>
     <div id="musicControl">🎵 Play Cute Music</div>
-    
     <audio id="bgMusic" loop>
         <source src="https://assets.mixkit.co/music/preview/mixkit-uplifting-chiptune-game-music-440.mp3" type="audio/mpeg">
     </audio>
@@ -198,20 +197,12 @@
         const canvas = document.getElementById('trailCanvas');
         const ctx = canvas.getContext('2d');
 
-        // Cute Meow sound effect
-        const meowSound = new Audio("https://assets.mixkit.co/sfx/preview/mixkit-sweet-kitty-meow-93.mp3");
-
         let score = 0;
         let yesSize = 1;
         let particles = [];
 
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
-
-        function playMeow() {
-            meowSound.currentTime = 0;
-            meowSound.play();
-        }
 
         function createFallingItem(isCat) {
             const item = document.createElement('div');
@@ -223,7 +214,6 @@
             document.body.appendChild(item);
             setTimeout(() => item.remove(), 5000);
         }
-
         setInterval(() => {
             createFallingItem(false);
             if (score >= 30) createFallingItem(true);
@@ -258,10 +248,13 @@
         }
         animate();
 
-        function moveNo() {
-            if (score < 20) return; 
-            let chance = 0.3; 
-            if (score >= 50) chance = 0.05; 
+        function moveNo(e) {
+            // Difficulty logic
+            if (score < 20) return; // EASY START: Doesn't move!
+
+            let chance = 0.3; // Default
+            if (score >= 50) chance = 0.05; // HARD MODE
+
             if (Math.random() < chance) return; 
 
             const x = Math.max(15, Math.random() * (window.innerWidth - 100));
@@ -282,21 +275,15 @@
         noBtn.onclick = (e) => {
             score++;
             scoreDisplay.innerText = score;
-            yesSize += 0.45; 
+            yesSize += 0.4; 
             yesBtn.style.transform = `scale(${yesSize})`;
-
-            // Play meow sound after click 30
-            if (score >= 30) playMeow();
 
             if (score % 10 === 0) {
                 const rect = noBtn.getBoundingClientRect();
                 createSuperFirework(rect.left + rect.width/2, rect.top + rect.height/2);
             }
 
-            if (score === 30) {
-                beggingText.innerText = "CAT ATTACK! 🐱🐾";
-                playMeow();
-            }
+            if (score === 30) beggingText.innerText = "CAT ATTACK! 🐱🐾";
             else if (score >= 50) beggingText.innerText = "ULTIMATE SPEED! ⚡";
             else beggingText.innerText = "Okay, you're persistent! 😤";
             
