@@ -17,6 +17,15 @@
             transition: background 0.5s;
         }
 
+        /* Sparkle Canvas */
+        #canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: 999;
+        }
+
         .dedication {
             position: absolute;
             top: 20px;
@@ -50,18 +59,6 @@
         }
         @keyframes fall {
             to { transform: translateY(105vh) rotate(360deg); }
-        }
-
-        .shake {
-            animation: shake 0.5s;
-        }
-        @keyframes shake {
-            0% { transform: translate(1px, 1px) rotate(0deg); }
-            10% { transform: translate(-1px, -2px) rotate(-1deg); }
-            30% { transform: translate(3px, 2px) rotate(0deg); }
-            50% { transform: translate(-1px, 2px) rotate(1deg); }
-            70% { transform: translate(3px, 1px) rotate(-1deg); }
-            100% { transform: translate(1px, -2px) rotate(0deg); }
         }
 
         .container {
@@ -103,9 +100,9 @@
         #noBtn { 
             background-color: #888; 
             color: white; 
-            z-index: 100; /* Higher than Yes */
+            z-index: 100;
             position: relative;
-            transition: all 0.2s ease; /* Speed will be modified by JS */
+            transition: all 0.2s ease;
         }
 
         #yesBtn, #moreBtn { 
@@ -114,10 +111,16 @@
             z-index: 5; 
         }
 
-        #moreBtn {
-            margin-top: 20px;
-            font-size: 1rem;
-            background-color: #d00000;
+        /* Music Controls */
+        #musicToggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            font-size: 0.8rem;
+            padding: 10px;
+            background: white;
+            border-radius: 20px;
+            z-index: 1000;
         }
         
         .celebration, .secret-gift-panel { 
@@ -125,17 +128,6 @@
             font-size: 1.5rem; 
             color: #ff4d6d; 
             font-weight: bold; 
-        }
-
-        .scoreboard {
-            font-size: 0.9rem;
-            color: #888;
-            margin-top: 10px;
-        }
-
-        .secret-gift-panel h2 {
-            color: #d00000;
-            font-size: 2rem;
         }
 
         .emoji-box { font-size: 3.5rem; display: block; margin-top: 15px; animation: bounce 1s infinite; }
@@ -148,10 +140,17 @@
 </head>
 <body>
 
+    <canvas id="canvas"></canvas>
+
     <div class="dedication">
         For YOU 🌸
         <span class="secret-lover">From your secret lover.. GAB 💌</span>
     </div>
+
+    <audio id="bgMusic" loop>
+        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+    </audio>
+    <button id="musicToggle">Play Music 🎵</button>
 
     <div class="container" id="card">
         <div id="content">
@@ -171,7 +170,7 @@
 
         <div id="secretGift" class="secret-gift-panel">
             <h2>Secret Gift 🎁</h2>
-            <p>This is a secret gift for your eyes only.</p>
+            <p>This is for your eyes only.</p>
             <div id="finalScore" style="font-size: 1rem; color: #555; margin-bottom: 10px;"></div>
             <span class="emoji-box">💖😘✨🌹💎</span>
         </div>
@@ -181,104 +180,28 @@
         const noBtn = document.getElementById('noBtn');
         const yesBtn = document.getElementById('yesBtn');
         const moreBtn = document.getElementById('moreBtn');
-        const card = document.getElementById('card');
         const content = document.getElementById('content');
         const message = document.getElementById('message');
         const secretGift = document.getElementById('secretGift');
         const beggingText = document.getElementById('beggingText');
         const finalScoreDisplay = document.getElementById('finalScore');
+        const music = document.getElementById('bgMusic');
+        const musicBtn = document.getElementById('musicToggle');
 
-        const phrases = [
-            "Are you sure? 🥺",
-            "Please don't do this... 💔",
-            "I'll give you all my attention! 💎",
-            "Think of the February 16 date! 🌹",
-            "I'll be the best Valentine ever!",
-            "Look at the Yes button, it's so big! 👉",
-            "My Queen deserves better than a No! 👑",
-            "I'm begging you! 🙏",
-            "Don't break my heart! 🥀"
-        ];
-
-        let yesSize = 1.2;
-        let phraseIndex = 0;
         let noCount = 0;
-        let speed = 0.3; // Initial move speed
+        let speed = 0.3;
+        let yesSize = 1.2;
 
-        function createHeart() {
-            const heart = document.createElement('div');
-            heart.classList.add('heart');
-            heart.innerHTML = ['❤️', '💖', '💝', '✨'][Math.floor(Math.random() * 4)];
-            heart.style.left = Math.random() * 100 + 'vw';
-            heart.style.animationDuration = Math.random() * 2 + 3 + 's';
-            heart.style.fontSize = Math.random() * 20 + 15 + 'px';
-            document.body.appendChild(heart);
-            setTimeout(() => heart.remove(), 5000);
+        // --- Sparkle Trail Logic ---
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
         }
-        setInterval(createHeart, 300);
+        window.addEventListener('resize', resize);
+        resize();
 
-        function explodeHearts() {
-            for(let i=0; i<100; i++) {
-                setTimeout(createHeart, i * 10);
-            }
-        }
-
-        function moveNoButton() {
-            noCount++;
-            card.classList.add('shake');
-            setTimeout(() => card.classList.remove('shake'), 500);
-
-            // Make the button position fixed and move it
-            noBtn.style.position = 'fixed';
-            
-            const padding = 60;
-            let newX = Math.random() * (window.innerWidth - noBtn.offsetWidth - padding);
-            let newY = Math.random() * (window.innerHeight - noBtn.offsetHeight - padding);
-            
-            // Keep button away from the edges
-            newX = Math.max(padding, newX);
-            newY = Math.max(padding, newY);
-
-            noBtn.style.left = `${newX}px`;
-            noBtn.style.top = `${newY}px`;
-
-            // Make it move faster each time (reduce transition time)
-            speed = Math.max(0.05, speed - 0.03); 
-            noBtn.style.transition = `${speed}s ease`;
-
-            // Update Text
-            beggingText.innerText = phrases[phraseIndex];
-            phraseIndex = (phraseIndex + 1) % phrases.length;
-
-            // Increase Yes Button Size
-            yesSize += 0.3;
-            yesBtn.style.transform = `scale(${yesSize})`;
-        }
-
-        noBtn.addEventListener('mouseover', moveNoButton);
-        noBtn.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            moveNoButton();
-        });
-
-        yesBtn.addEventListener('click', () => {
-            explodeHearts();
-            content.style.display = 'none';
-            document.querySelector('.dedication').style.display = 'none';
-            message.style.display = 'block';
-            document.body.style.backgroundColor = '#ff4d6d';
-            noBtn.style.display = 'none';
-        });
-
-        moreBtn.addEventListener('click', () => {
-            explodeHearts();
-            message.style.display = 'none';
-            secretGift.style.display = 'block';
-            document.body.style.backgroundColor = '#d00000';
-            // Show the final scoreboard
-            finalScoreDisplay.innerHTML = `You tried to say No <b>${noCount}</b> times... <br>but love won! ❤️`;
-        });
-
-    </script>
-</body>
-</html>
+        class Particle
